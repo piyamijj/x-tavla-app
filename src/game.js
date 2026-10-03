@@ -263,6 +263,30 @@ export function rollDice() {
   return [randomDie(), randomDie()];
 }
 
+// Ciftte 4 zar gosterilir, kullanilanlar soluk isaretlenir.
+// Donus: [{ face, used }] (kullanim sirasiyla)
+export function diceFaces(rolled, dice) {
+  if (!rolled || rolled.length < 2) return [];
+  const [a, b] = rolled;
+  const faces = a === b ? [a, a, a, a] : [a, b];
+  const rest = (dice || []).slice();
+  return faces.map((f) => {
+    const i = rest.indexOf(f);
+    if (i >= 0) {
+      rest.splice(i, 1);
+      return { face: f, used: false };
+    }
+    return { face: f, used: true };
+  });
+}
+
+// Zar yuzundeki noktalarin 3x3 hucre numaralari (1..9)
+const PIPS = { 1: [5], 2: [1, 9], 3: [1, 5, 9], 4: [1, 3, 7, 9], 5: [1, 3, 5, 7, 9], 6: [1, 3, 4, 6, 7, 9] };
+
+export function pipCells(face) {
+  return (PIPS[face] || []).slice();
+}
+
 export class Game {
   constructor(opts = {}) {
     this.listeners = new Set();
