@@ -69,28 +69,38 @@ function checkerEl(color, label = '') {
   return d;
 }
 
+// Online Siyah oyuncu tahtayi kendi bakis acisindan gorur: ust/alt yer degistirir
+// (ev sag altta, numaralar Siyah icin 1..24). Yalnizca gorunum; oyun mantigi ayni.
+let boardFlipped = null;
+function isFlipped() {
+  return mode === 'online' && myColor === BLACK;
+}
+
 function buildBoard() {
+  const flip = isFlipped();
+  boardFlipped = flip;
   const board = $('#board');
   board.innerHTML = '';
   for (const top of [true, false]) {
     COLS.forEach((col, k) => {
-      const idx = colToPoint(col, top);
+      const idx = colToPoint(col, flip ? !top : top);
       const p = document.createElement('div');
       p.className = `point ${top ? 'top' : 'bottom'}${(k % 2 === (top ? 1 : 0)) ? ' alt' : ''}`;
       p.style.gridColumn = String(col);
       p.dataset.idx = String(idx);
       const lab = document.createElement('span');
       lab.className = 'point-label';
-      lab.textContent = String(idx + 1);
+      lab.textContent = String(flip ? 24 - idx : idx + 1);
       p.appendChild(lab);
       board.appendChild(p);
     });
   }
   const bar = document.createElement('div');
   bar.className = 'bar';
-  bar.innerHTML = `<div class="bar-slot" data-bar="${BLACK}"></div><div class="bar-slot bottom-slot" data-bar="${WHITE}"></div>`;
+  const [barTop, barBottom] = flip ? [WHITE, BLACK] : [BLACK, WHITE];
+  bar.innerHTML = `<div class="bar-slot" data-bar="${barTop}"></div><div class="bar-slot bottom-slot" data-bar="${barBottom}"></div>`;
   board.appendChild(bar);
-  for (const [side, cls] of [[BLACK, 'top'], [WHITE, 'bottom']]) {
+  for (const [side, cls] of (flip ? [[WHITE, 'top'], [BLACK, 'bottom']] : [[BLACK, 'top'], [WHITE, 'bottom']])) {
     const off = document.createElement('div');
     off.className = `off ${cls}`;
     off.dataset.off = side;
@@ -105,6 +115,7 @@ function sideName(p) {
 }
 
 function render() {
+  if (boardFlipped !== isFlipped()) buildBoard();
   const s = game.state;
   // Pullar
   document.querySelectorAll('#board .point').forEach((el) => {
