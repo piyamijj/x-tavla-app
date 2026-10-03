@@ -1,0 +1,16 @@
+{
+  "appId": "com.xtavla.app",
+  "appName": "X-Tavla",
+  "webDir": "dist",
+  "bundledWebRuntime": false,
+  "server": {
+    "androidScheme": "https"
+  },
+  "android": {
+    "backgroundColor": "#0f172a",
+    "allowMixedContent": false
+  },
+  "plugins": {
+    "Haptics": {}
+  }
+}
