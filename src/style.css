@@ -222,6 +222,7 @@ html, body {
 .dice-area.many .die {
   width: clamp(22px, 5vmin, 34px);
   height: clamp(22px, 5vmin, 34px);
+  padding: clamp(2px, 0.7vmin, 4px);
 }
 .dice-area.left { left: 27%; }
 .die {
@@ -232,7 +233,8 @@ html, body {
   box-shadow: 0 4px 10px rgba(0,0,0,0.6), inset 0 -2px 4px rgba(0,0,0,0.2);
   display: grid;
   grid-template: repeat(3, 1fr) / repeat(3, 1fr);
-  padding: 14%;
+  /* % padding .dice-area genisligine gore hesaplaniyordu; 4 zarda noktalari sifira eziyordu */
+  padding: clamp(3px, 1vmin, 6px);
   transform-style: preserve-3d;
 }
 .die.black-die {
