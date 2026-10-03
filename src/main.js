@@ -1,5 +1,5 @@
 // X-Tavla ana denetleyici: ekranlar, tahta cizimi, dokunmatik giris, AI + online akis
-import { Game, WHITE, BLACK, opponent, countAt } from './game.js';
+import { Game, WHITE, BLACK, opponent, countAt, diceFaces, pipCells } from './game.js';
 import { chooseMoves } from './ai.js';
 import { Lobby } from './lobby.js';
 import { unlock, play, fx, haptic, setEnabled, isEnabled } from './audio.js';
@@ -156,18 +156,16 @@ function renderDice() {
   const s = game.state;
   if (!s.rolled.length) return;
   area.classList.toggle('left', s.turn === BLACK);
-  const [a, b] = s.rolled;
-  const faces = a === b ? [a, a, a, a] : [a, b];
-  const rest = s.dice.slice();
-  faces.forEach((f) => {
+  const faces = diceFaces(s.rolled, s.dice);
+  area.classList.toggle('many', faces.length > 2);
+  faces.forEach(({ face, used }) => {
     const d = document.createElement('div');
-    d.className = `die${s.turn === BLACK ? ' black-die' : ''}`;
-    const i = rest.indexOf(f);
-    if (i >= 0) rest.splice(i, 1);
-    else d.classList.add('used');
-    for (const cell of [1, 2, 3, 4, 5, 6, 7, 8, 9]) {
+    d.className = `die${s.turn === BLACK ? ' black-die' : ''}${used ? ' used' : ''}`;
+    d.setAttribute('aria-label', `zar ${face}${used ? ' (kullanıldı)' : ''}`);
+    const pips = pipCells(face);
+    for (let cell = 1; cell <= 9; cell++) {
       const pip = document.createElement('div');
-      if ([[5], [1, 9], [1, 5, 9], [1, 3, 7, 9], [1, 3, 5, 7, 9], [1, 3, 4, 6, 7, 9]][f - 1].includes(cell)) pip.className = 'pip';
+      if (pips.includes(cell)) pip.className = 'pip';
       d.appendChild(pip);
     }
     area.appendChild(d);
@@ -206,9 +204,14 @@ function renderSelection() {
 function renderStatus() {
   const s = game.state;
   $('#score').textContent = `${game.score.w} - ${game.score.b}`;
+  let diceTxt = '';
+  if (!game.result && s.rolled.length === 2) {
+    const [a, b] = s.rolled;
+    diceTxt = a === b ? ` · Zar: Çift ${a}` : ` · Zar: ${a}-${b}`;
+  }
   $('#turn-indicator').textContent = game.result
     ? `🏆 ${sideName(game.result.winner)} kazandı (${game.result.type}, +${game.result.points})`
-    : `Sıra: ${sideName(s.turn)}`;
+    : `Sıra: ${sideName(s.turn)}${diceTxt}`;
   const mine = canAct();
   $('#btn-roll').disabled = !(mine && game.needsRoll());
   $('#btn-undo').disabled = !(mine && game.canUndo() && mode !== 'online');
