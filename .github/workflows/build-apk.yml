@@ -1,0 +1,58 @@
+name: X-Tavla APK Derle
+
+on:
+  push:
+    branches: [main]
+  release:
+    types: [published]
+
+jobs:
+  apk:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Kodu al
+        uses: actions/checkout@v4
+
+      - name: Node.js kur
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Java kur
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - name: Android SDK kur
+        uses: android-actions/setup-android@v3
+
+      - name: Bağımlılıkları kur
+        run: npm ci
+
+      - name: Web derle (Vite)
+        run: npm run build
+
+      - name: Capacitor Android platformu
+        run: |
+          if [ ! -d android ]; then npx cap add android; fi
+          npx cap sync android
+
+      - name: Debug APK derle
+        run: |
+          cd android
+          chmod +x gradlew
+          ./gradlew assembleDebug
+
+      - name: APK artifact yükle
+        uses: actions/upload-artifact@v4
+        with:
+          name: x-tavla-debug-apk
+          path: android/app/build/outputs/apk/debug/app-debug.apk
+
+      - name: Release'e APK ekle
+        if: github.event_name == 'release'
+        uses: softprops/action-gh-release@v2
+        with:
+          files: android/app/build/outputs/apk/debug/app-debug.apk
